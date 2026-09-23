@@ -1,0 +1,17 @@
+{
+  "name": "AI Attendance System",
+  "short_name": "AI Attendance",
+  "description": "Face + voice AI attendance platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05070d",
+  "theme_color": "#05070d",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+# Python
+venv/
+venv_backend/
+__pycache__/
+*.py[cod]
+*.db
+.venv/
+
+# Node
+node_modules/
+frontend/.next/
+frontend/out/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Misc
+/tmp
+*.log
+.freebuff/
+
+# Python build
+*.egg-info/
+build/
+dist/
