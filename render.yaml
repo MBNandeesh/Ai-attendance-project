@@ -4,7 +4,8 @@ services:
     runtime: python
     rootDir: backend
     plan: free
-    buildCommand: pip install -e ".[ml]" && python -c "import dlib" || pip install -e ".[ml]"
+    # dlib needs a compile toolchain; keep startup honest by importing the ML stack.
+    buildCommand: apt-get update && apt-get install -y build-essential cmake && pip install -e ".[ml]"
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     envVars:
@@ -14,5 +15,7 @@ services:
         generateValue: true
       - key: ENVIRONMENT
         value: production
+      - key: CORS_ORIGINS
+        sync: false  # your Vercel URL, e.g. https://ai-attendance.vercel.app
       - key: DATABASE_URL
-        sync: false  # set to your free Neon Postgres connection string
+        sync: false  # your Neon Postgres connection string (postgresql+psycopg://...)

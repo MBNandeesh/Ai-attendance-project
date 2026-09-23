@@ -11,7 +11,8 @@ class Settings(BaseSettings):
     # App
     app_name: str = "AI Attendance System API"
     environment: str = "development"
-    cors_origins: list[str] = ["http://localhost:3000"]
+    # Comma-separated list, e.g. "https://ai-attendance.vercel.app,http://localhost:3000"
+    cors_origins: str = "http://localhost:3000"
 
     # Database — SQLite locally, Neon Postgres in production (free tier).
     # Example prod value: postgresql+psycopg://user:pass@host/dbname
@@ -22,6 +23,11 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24  # 24h for dev; tighten in prod
     refresh_token_expire_days: int = 14
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        """Parse the comma-separated CORS_ORIGINS env var into a list."""
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
     def is_production(self) -> bool:
         return self.environment.lower() == "production"
