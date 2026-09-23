@@ -27,8 +27,6 @@ Thumbs.db
 /tmp
 *.log
 .freebuff/
-frontend/
-ai-attendance-project-app/
 
 # Python build
 *.egg-info/
