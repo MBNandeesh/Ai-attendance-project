@@ -68,7 +68,6 @@ def register_student(body: StudentRegisterRequest, db: Session = Depends(get_db)
     student = Student(
         name=body.name,
         face_embedding=json.dumps([embedding]),
-        voice_embedding=json.dumps(body.voice_embedding) if body.voice_embedding else None,
     )
     db.add(student)
     db.commit()
@@ -112,7 +111,7 @@ def face_login(body: FaceLoginRequest, db: Session = Depends(get_db)):
 @router.post("/me/face-samples", response_model=StudentOut)
 def add_face_samples(
     body: FaceSamplesUpdateRequest,
-    student: Student = Depends(get_current_student),
+    student: Student = Depends(get_current_student),  # noqa: B008
     db: Session = Depends(get_db),
 ):
     new_embeddings = [_single_face_embedding(img) for img in body.face_images]

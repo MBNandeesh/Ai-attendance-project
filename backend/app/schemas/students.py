@@ -6,10 +6,8 @@ class StudentRegisterRequest(BaseModel):
     face_image: str = Field(
         description="Base64-encoded JPEG/PNG of the student's face"
     )
-    voice_embedding: list[float] | None = Field(
-        default=None,
-        description="Optional 256-D voice embedding",
-    )
+    # Voice is enrolled separately via POST /voice/enroll so it always
+    # comes from a real authenticated recording, not a client-supplied vector.
 
 
 class FaceLoginRequest(BaseModel):

@@ -23,7 +23,7 @@ def get_challenge(student: Student = Depends(get_current_student)):
 @router.post("/verify", response_model=LivenessVerifyResponse)
 def verify_liveness(
     body: LivenessVerifyRequest,
-    student: Student = Depends(get_current_student),
+    student: Student = Depends(get_current_student),  # noqa: B008
 ):
     challenge = pop_challenge(body.session_token)
     if challenge is None:

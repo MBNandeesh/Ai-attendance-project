@@ -2,7 +2,7 @@
 
 Full-stack, passwordless attendance platform: **Next.js 16** frontend, **FastAPI** backend, dlib face recognition, Resemblyzer voice verification, and **anti-spoofing liveness detection** (blink dynamics + challenge-response head pose).
 
-![status](https://img.shields.io/badge/tests-59%20passing-brightgreen) ![ci](https://img.shields.io/badge/CI-GitHub_Actions-blue)
+![status](https://img.shields.io/badge/tests-61%20passing-brightgreen) ![ci](https://img.shields.io/badge/CI-GitHub_Actions-blue)
 
 ## Features
 
@@ -10,7 +10,7 @@ Full-stack, passwordless attendance platform: **Next.js 16** frontend, **FastAPI
 - 👩‍🏫 **Teacher** — subject management with unique join codes, photo-based face attendance, bulk voice attendance, session records, CSV export
 - 🛡️ **Liveness (flagship)** — webcam challenge ("turn left…") verified via eye-aspect-ratio blink detection + head-pose estimation; printed photos and replayed videos fail
 - 🔐 **Security** — JWT access/refresh pairs, role-scoped tokens, bcrypt, server-side-only DB access, auditable manual overrides
-- 🏗️ **Engineering** — 59 tests, ruff, GitHub Actions CI, Docker, typed API end-to-end
+- 🏗️ **Engineering** — 61 tests, ruff, GitHub Actions CI, Docker, typed API end-to-end
 
 ## Architecture
 
@@ -63,7 +63,7 @@ Copy `.env.example` → configure:
 
 ```bash
 cd backend
-pytest tests/          # 59 tests: auth, subjects, enrollment, attendance, liveness, face logic
+pytest tests/          # 61 tests: auth, subjects, enrollment, attendance, liveness, face logic
 ruff check .           # lint
 ```
 

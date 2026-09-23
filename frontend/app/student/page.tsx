@@ -62,6 +62,10 @@ function StudentAuth({ onAuthed }: { onAuthed: (auth: { user_id: number; role: s
   const [showRegister, setShowRegister] = useState(false);
 
   const startCamera = useCallback(async () => {
+    // Stop any previous stream so retrying never leaks camera handles.
+    const existing = videoRef.current?.srcObject as MediaStream | null;
+    existing?.getTracks().forEach((t) => t.stop());
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 640 } },

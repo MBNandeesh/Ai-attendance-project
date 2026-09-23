@@ -17,7 +17,7 @@ router = APIRouter(prefix="/voice", tags=["voice"])
 @router.post("/enroll", response_model=VoiceEnrollResponse)
 def enroll_voice(
     body: VoiceEnrollRequest,
-    student: Student = Depends(get_current_student),
+    student: Student = Depends(get_current_student),  # noqa: B008
     db: Session = Depends(get_db),
 ):
     try:
@@ -47,7 +47,7 @@ def enroll_voice(
 
 @router.get("/status", response_model=VoiceEnrollResponse)
 def voice_status(
-    student: Student = Depends(get_current_student),
+    student: Student = Depends(get_current_student),  # noqa: B008
     db: Session = Depends(get_db),
 ):
     existing = normalize_voice_embeddings(student.voice_embedding)

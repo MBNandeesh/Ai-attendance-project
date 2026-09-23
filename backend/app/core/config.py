@@ -23,10 +23,25 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24  # 24h for dev; tighten in prod
     refresh_token_expire_days: int = 14
 
+    def is_production(self) -> bool:
+        return self.environment.lower() == "production"
+
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    if settings.is_production():
+        insecure: list[str] = []
+        if settings.jwt_secret_key.startswith("dev-only"):
+            insecure.append("JWT_SECRET_KEY")
+        if settings.database_url.startswith("sqlite"):
+            insecure.append("DATABASE_URL (sqlite is not safe for production data)")
+        if insecure:
+            raise RuntimeError(
+                "Refusing to start in production with insecure settings: "
+                + "; ".join(insecure)
+            )
+    return settings
 
 
 settings = get_settings()

@@ -15,11 +15,15 @@ async def lifespan(app: FastAPI):
 
 
 def create_app() -> FastAPI:
+    # Hide interactive docs in production to reduce surface area.
+    show_docs = not settings.is_production()
+
     app = FastAPI(
         title=settings.app_name,
         version="0.1.0",
-        openapi_url="/api/v1/openapi.json",
-        docs_url="/api/docs",
+        openapi_url="/api/v1/openapi.json" if show_docs else None,
+        docs_url="/api/docs" if show_docs else None,
+        redoc_url=None,
         lifespan=lifespan,
     )
 

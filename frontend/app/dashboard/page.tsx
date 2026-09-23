@@ -11,6 +11,7 @@ import {
   teacherRecords,
   attendanceCsvUrl,
   fileToBase64,
+  getStoredTokens,
   ApiError,
   type Subject,
   type AttendanceRecord,
@@ -281,10 +282,35 @@ function TakeAttendance() {
 
 function Records() {
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     teacherRecords().then(setRecords).catch(() => {});
   }, []);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const tokens = getStoredTokens();
+      const res = await fetch(attendanceCsvUrl(), {
+        headers: tokens?.access_token
+          ? { Authorization: `Bearer ${tokens.access_token}` }
+          : undefined,
+      });
+      if (!res.ok) throw new Error(`Export failed (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "attendance_records.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Could not export CSV — please log in again.");
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const sessions = new Map<number, AttendanceRecord[]>();
   for (const r of records) {
@@ -297,9 +323,9 @@ function Records() {
     <div>
       <div className="flex items-center justify-between">
         <h2 className="font-bold">Attendance Records</h2>
-        <a href={attendanceCsvUrl()} target="_blank" rel="noreferrer" className="btn-ghost !py-2 text-sm">
-          Export CSV
-        </a>
+        <button onClick={handleExport} disabled={exporting} className="btn-ghost !py-2 text-sm">
+          {exporting ? "Exporting…" : "Export CSV"}
+        </button>
       </div>
 
       {sessions.size === 0 ? (

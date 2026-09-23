@@ -101,3 +101,19 @@ def test_refresh_rejects_access_token(client, teacher):
     access_token = teacher["headers"]["Authorization"].split(" ")[1]
     resp = client.post("/api/v1/auth/teacher/refresh", json={"refresh_token": access_token})
     assert resp.status_code == 401
+
+
+def test_refresh_token_cannot_authenticate_routes(client, teacher):
+    """SECURITY: a refresh token must never act as an access token."""
+    username = _unique_username()
+    _register(client, username)
+    refresh_token = _login(client, username).json()["refresh_token"]
+
+    headers = {"Authorization": f"Bearer {refresh_token}"}
+    resp = client.get("/api/v1/auth/teacher/me", headers=headers)
+    assert resp.status_code == 401
+
+
+def test_access_token_accepted_on_routes(client, teacher):
+    resp = client.get("/api/v1/auth/teacher/me", headers=teacher["headers"])
+    assert resp.status_code == 200
