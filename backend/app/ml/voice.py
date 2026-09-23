@@ -1,22 +1,41 @@
-"""Voice speaker-recognition pipeline (ported from the Streamlit prototype)."""
+"""Voice speaker-recognition pipeline (ported from the Streamlit prototype).
+
+librosa/resemblyzer are imported lazily so the module (and its pure-numpy
+matching logic) loads even without the heavy ML deps installed.
+"""
 
 import io
 import json
 
-import librosa
 import numpy as np
-from resemblyzer import VoiceEncoder, preprocess_wav
 
 VOICE_MATCH_THRESHOLD = 0.65
 MIN_SEGMENT_SECONDS = 0.5
 VAD_TOP_DB = 30
 
-_encoder: VoiceEncoder | None = None
+_encoder = None
 
 
-def _get_encoder() -> VoiceEncoder:
+class MLDependencyError(RuntimeError):
+    """Raised when voice ML is used without its heavy dependencies installed."""
+
+
+def _lazy_import_voice():
+    try:
+        import librosa
+        from resemblyzer import VoiceEncoder, preprocess_wav
+
+        return librosa, VoiceEncoder, preprocess_wav
+    except ImportError as exc:
+        raise MLDependencyError(
+            "Voice dependencies are not installed. Run: pip install -e '.[ml]'"
+        ) from exc
+
+
+def _get_encoder():
     global _encoder
     if _encoder is None:
+        _, VoiceEncoder, _ = _lazy_import_voice()
         _encoder = VoiceEncoder()
     return _encoder
 
@@ -24,9 +43,12 @@ def _get_encoder() -> VoiceEncoder:
 def embed_audio_bytes(audio_bytes: bytes) -> np.ndarray | None:
     """Embed a single utterance from raw audio bytes (any librosa-readable format)."""
     try:
+        librosa, _, preprocess_wav = _lazy_import_voice()
         audio, sr = librosa.load(io.BytesIO(audio_bytes), sr=16000)
         wav = preprocess_wav(audio)
         return _get_encoder().embed_utterance(wav)
+    except MLDependencyError:
+        raise
     except Exception:
         return None
 
@@ -74,7 +96,10 @@ def process_bulk_audio(
     Returns {student_id: best_similarity} for everyone identified.
     """
     try:
+        librosa, _, preprocess_wav = _lazy_import_voice()
         audio, sr = librosa.load(io.BytesIO(audio_bytes), sr=16000)
+    except MLDependencyError:
+        raise
     except Exception:
         return {}
 

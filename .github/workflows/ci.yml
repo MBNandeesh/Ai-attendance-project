@@ -17,8 +17,8 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      # ml-core pulls prebuilt dlib wheels (no torch); full `ml` (resemblyzer/torch) stays out of CI.
-      - run: pip install -e ".[dev,ml-core]"
+      # ML pipelines lazy-import dlib/torch, so CI runs on [dev] alone — fast and reliable.
+      - run: pip install -e ".[dev]"
       - run: ruff check .
       - run: pytest tests/ --cov=app --cov-report=term
 

@@ -5,6 +5,8 @@ __pycache__/
 *.py[cod]
 *.db
 .venv/
+.coverage
+htmlcov/
 
 # Node
 node_modules/

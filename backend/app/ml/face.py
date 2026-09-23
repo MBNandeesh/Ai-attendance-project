@@ -4,11 +4,29 @@ Key improvements over v1:
 - Vectorized distance computation (numpy matrix ops instead of per-student loops)
 - Embeddings stored per student as JSON lists of 128-D vectors
 - Same proven detection strategy: multi-upsample + flipped-frame pass + IOU merge
+
+dlib is imported lazily so the module (and its pure-numpy matching logic,
+which tests exercise directly) loads even without the heavy ML deps.
 """
 
-import dlib
-import face_recognition_models
 import numpy as np
+
+
+class MLDependencyError(RuntimeError):
+    """Raised when an ML endpoint is used without its heavy dependencies installed."""
+
+
+def _lazy_import_dlib():
+    try:
+        import dlib
+        import face_recognition_models
+
+        return dlib, face_recognition_models
+    except ImportError as exc:
+        raise MLDependencyError(
+            "ML dependencies are not installed. Run: pip install -e '.[ml-core]'"
+        ) from exc
+
 
 # Tunables (same values proven in the Streamlit prototype)
 FACE_DETECTOR_UPSAMPLE = 2
@@ -28,6 +46,7 @@ def _get_models():
     """Load dlib models once per process."""
     global _models
     if _models is None:
+        dlib, face_recognition_models = _lazy_import_dlib()
         detector = dlib.get_frontal_face_detector()
         sp = dlib.shape_predictor(face_recognition_models.pose_predictor_model_location())
         facerec = dlib.face_recognition_model_v1(
@@ -63,6 +82,7 @@ def _merge_face_rectangles(rectangles):
 
 def detect_face_rectangles(image_np: np.ndarray):
     """Multi-pass detection: 2x upsample, 3x fallback, and flipped frame."""
+    dlib, _ = _lazy_import_dlib()
     detector, _, _ = _get_models()
     image_height, image_width = image_np.shape[:2]
 

@@ -1,12 +1,14 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.db.session import init_db
+from app.ml.face import MLDependencyError as FaceMLDependencyError
+from app.ml.voice import MLDependencyError as VoiceMLDependencyError
 
 
 @asynccontextmanager
@@ -47,6 +49,11 @@ def create_app() -> FastAPI:
         )
 
     app.include_router(api_router, prefix="/api/v1")
+
+    @app.exception_handler(FaceMLDependencyError)
+    @app.exception_handler(VoiceMLDependencyError)
+    async def ml_dependency_handler(request: Request, exc: Exception):
+        return JSONResponse(status_code=503, content={"detail": str(exc)})
 
     @app.get("/api/health")
     def health():
