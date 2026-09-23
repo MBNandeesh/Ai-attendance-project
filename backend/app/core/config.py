@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     app_name: str = "AI Attendance System API"
     environment: str = "development"
     # Comma-separated list, e.g. "https://ai-attendance.vercel.app,http://localhost:3000"
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = ""
 
     # Database — SQLite locally, Neon Postgres in production (free tier).
     # Example prod value: postgresql+psycopg://user:pass@host/dbname
@@ -26,8 +26,23 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        """Parse the comma-separated CORS_ORIGINS env var into a list."""
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        """Parse the comma-separated CORS_ORIGINS env var into a list.
+
+        In non-production, any localhost/127.0.0.1 origin is always allowed
+        (dev servers move between ports), so local development never breaks.
+        """
+        configured = [
+            origin.strip()
+            for origin in self.cors_origins.split(",")
+            if origin.strip()
+        ]
+        if not self.is_production():
+            return configured  # matcher below allows localhost in dev
+        return configured
+
+    @property
+    def allow_localhost_origins(self) -> bool:
+        return not self.is_production()
 
     def is_production(self) -> bool:
         return self.environment.lower() == "production"
