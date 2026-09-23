@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -143,7 +144,7 @@ function StudentAuth({ onAuthed }: { onAuthed: (auth: { user_id: number; role: s
     <main className="relative flex min-h-screen items-center justify-center px-4">
       <div className="aurora-bg" />
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="glass w-full max-w-lg p-8">
-        <a href="/" className="text-sm text-[var(--ink-faint)] transition hover:text-white">← Back to home</a>
+        <Link href="/" className="text-sm text-[var(--ink-faint)] transition hover:text-white">← Back to home</Link>
         <h1 className="mt-4 text-2xl font-black tracking-tight">Student Portal</h1>
         <p className="mt-1 text-sm text-[var(--ink-dim)]">Passwordless Face ID login</p>
 
