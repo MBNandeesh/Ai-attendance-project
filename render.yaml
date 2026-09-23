@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: ai-attendance-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -e ".[ml]" && python -c "import dlib" || pip install -e ".[ml]"
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        sync: false  # set to your free Neon Postgres connection string
