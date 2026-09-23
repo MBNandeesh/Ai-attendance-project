@@ -142,9 +142,14 @@ export default function LandingPage() {
             <a href="#metrics" className="transition hover:text-white">Metrics</a>
             <a href="#how" className="transition hover:text-white">How it works</a>
           </div>
-          <Link href="/login" className="btn-primary !px-4 !py-2 text-sm">
-            Teacher Portal
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/student" className="btn-ghost !px-4 !py-2 text-sm">
+              Student Portal
+            </Link>
+            <Link href="/login" className="btn-primary !px-4 !py-2 text-sm">
+              Teacher Portal
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -187,6 +192,7 @@ export default function LandingPage() {
           transition={{ duration: 0.8, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
           className="mt-9 flex flex-wrap items-center justify-center gap-3.5"
         >
+          <Link href="/student" className="btn-ghost">Student Face ID Login</Link>
           <Link href="/login" className="btn-primary">
             Launch Teacher Portal
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
