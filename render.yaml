@@ -6,8 +6,10 @@ services:
     plan: free
     # ml-core = prebuilt dlib wheels + face models (face attendance works).
     # Full [ml] adds torch/resemblyzer — exceeds free-tier RAM, causes OOM; voice stays 503 by design.
-    # git is required to pip-install face_recognition_models from GitHub.
-    buildCommand: apt-get update && apt-get install -y build-essential cmake git && pip install -e ".[ml-core]"
+    # No apt-get here: Render's native Python runtime has a read-only system, and
+    # dlib-bin ships prebuilt (no compiler needed). git is preinstalled for the
+    # face_recognition_models git dependency.
+    buildCommand: pip install -e ".[ml-core]"
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     envVars:
