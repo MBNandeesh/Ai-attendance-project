@@ -4,8 +4,10 @@ services:
     runtime: python
     rootDir: backend
     plan: free
-    # dlib needs a compile toolchain; keep startup honest by importing the ML stack.
-    buildCommand: apt-get update && apt-get install -y build-essential cmake && pip install -e ".[ml]"
+    # ml-core = prebuilt dlib wheels + face models (face attendance works).
+    # Full [ml] adds torch/resemblyzer — exceeds free-tier RAM, causes OOM; voice stays 503 by design.
+    # git is required to pip-install face_recognition_models from GitHub.
+    buildCommand: apt-get update && apt-get install -y build-essential cmake git && pip install -e ".[ml-core]"
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     envVars:
