@@ -3,12 +3,39 @@
  */
 
 /**
- * Same-origin API base. All requests go to /api/... on this site's own origin;
- * in production Next.js rewrites proxy them to the FastAPI backend (see
- * next.config.ts), so no CORS and no public backend URL are needed.
- * `API_PROXY_URL` is the server-side override used by the rewrite itself.
+ * Resilient API base resolution.
+ *
+ * Strategy:
+ * 1. Probe same-origin `/api/health` — when the same-origin proxy (Vercel
+ *    route handler / rewrites) is active, this returns JSON and we use
+ *    relative URLs for everything (no CORS involved).
+ * 2. Otherwise, fall back to calling the backend directly using the
+ *    NEXT_PUBLIC_API_URL env var (requires CORS_ORIGINS on the backend).
+ *
+ * The probe runs once per page load and the result is cached.
  */
-const API_BASE = "";
+let apiBasePromise: Promise<string> | null = null;
+
+async function probeApiBase(): Promise<string> {
+  try {
+    const res = await fetch("/api/health", { cache: "no-store" });
+    const ct = res.headers.get("content-type") ?? "";
+    if (res.ok && ct.includes("application/json")) {
+      const body = (await res.json()) as { status?: string };
+      if (body.status === "ok") return ""; // same-origin proxy works
+    }
+  } catch {
+    // probe failed — try direct fallback below
+  }
+  const direct = process.env.NEXT_PUBLIC_API_URL;
+  if (direct) return direct.replace(/\/$/, "");
+  return ""; // no fallback configured; same-origin requests will surface errors
+}
+
+export function getApiBase(): Promise<string> {
+  if (!apiBasePromise) apiBasePromise = probeApiBase();
+  return apiBasePromise;
+}
 
 export type TokenPair = {
   access_token: string;
@@ -129,7 +156,8 @@ async function refreshAccessToken(): Promise<boolean> {
   const tokens = getStoredTokens();
   if (!tokens?.refresh_token) return false;
 
-  const res = await fetch(`${API_BASE}${refreshPath(getStoredRole())}`, {
+  const base = await getApiBase();
+  const res = await fetch(`${base}${refreshPath(getStoredRole())}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refresh_token: tokens.refresh_token }),
@@ -154,7 +182,8 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}, retry = 
   if (tokens?.access_token) headers.set("Authorization", `Bearer ${tokens.access_token}`);
   if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
 
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
+  const base = await getApiBase();
+  const res = await fetch(`${base}${path}`, { ...init, headers });
 
   if (res.status === 401 && retry) {
     const refreshed = await refreshAccessToken();
@@ -268,7 +297,13 @@ export function studentRecords(): Promise<AttendanceRecord[]> {
 }
 
 export function attendanceCsvUrl(): string {
-  return `${API_BASE}/api/v1/attendance/records/export`;
+  // Callers await getApiBase() when they need the absolute URL.
+  return "/api/v1/attendance/records/export";
+}
+
+export async function attendanceCsvAbsoluteUrl(): Promise<string> {
+  const base = await getApiBase();
+  return `${base}/api/v1/attendance/records/export`;
 }
 
 // ---------- Liveness ----------

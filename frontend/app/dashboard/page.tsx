@@ -9,7 +9,7 @@ import {
   createSession,
   submitFaceAttendance,
   teacherRecords,
-  attendanceCsvUrl,
+  attendanceCsvAbsoluteUrl,
   fileToBase64,
   getStoredTokens,
   ApiError,
@@ -292,7 +292,7 @@ function Records() {
     setExporting(true);
     try {
       const tokens = getStoredTokens();
-      const res = await fetch(attendanceCsvUrl(), {
+      const res = await fetch(await attendanceCsvAbsoluteUrl(), {
         headers: tokens?.access_token
           ? { Authorization: `Bearer ${tokens.access_token}` }
           : undefined,
