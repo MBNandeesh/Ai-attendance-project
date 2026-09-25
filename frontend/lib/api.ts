@@ -2,7 +2,13 @@
  * Typed API client — extended for students, attendance, liveness.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+/**
+ * Same-origin API base. All requests go to /api/... on this site's own origin;
+ * in production Next.js rewrites proxy them to the FastAPI backend (see
+ * next.config.ts), so no CORS and no public backend URL are needed.
+ * `API_PROXY_URL` is the server-side override used by the rewrite itself.
+ */
+const API_BASE = "";
 
 export type TokenPair = {
   access_token: string;

@@ -40,10 +40,12 @@ Free-tier deployment: **Neon Postgres** (DB) + **Render** (API) + **Vercel** (fr
 
 1. [vercel.com](https://vercel.com) → **Add New Project** → Import `MBNandeesh/Ai-attendance-project`.
 2. **Root Directory:** `frontend`
-3. Environment variable:
-   - `NEXT_PUBLIC_API_URL` = `https://<your-service>.onrender.com` (no trailing slash)
+3. Environment variable (server-only, used by the API proxy — **not** `NEXT_PUBLIC_*`):
+   - `API_PROXY_URL` = `https://<your-service>.onrender.com` (no trailing slash)
 4. Deploy → get your URL: `https://ai-attendance.vercel.app` (or similar).
 5. Go back to Render → your service → Environment → edit `CORS_ORIGINS` → set it to exactly that Vercel URL (with `https://`, no trailing slash) → Save (auto-redeploys).
+
+> The frontend calls `/api/...` on its **own origin**; Vercel's rewrites (in `next.config.ts`) proxy those to the Render backend. The browser never talks cross-origin, so even if `CORS_ORIGINS` is unset, everything still works. Setting it is defense-in-depth for direct API access.
 
 ---
 
@@ -77,8 +79,8 @@ Open any port Next prints (3000, or 58579 etc.) — the backend now accepts **an
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Browser console: CORS blocked | `CORS_ORIGINS` missing the Vercel URL | Add exact origin (scheme + host, no slash) in Render env |
-| "ML dependencies are not installed" (503) | backend deployed without `[ml]` extras | Build command must be `pip install -e ".[ml]"` |
+| API calls hit the Vercel domain and 404 | `API_PROXY_URL` env var missing in Vercel | Add `API_PROXY_URL` = Render URL, then **redeploy** (rewrites are baked at build time) |
+| "ML dependencies are not installed" (503) | backend deployed without ML extras | Build command must be `pip install -e ".[ml-core]"` (Render blueprint already does this) |
 | First request very slow | Render free cold start | Normal; ping `/api/health` first |
 | Camera denied | Browser needs HTTPS or localhost | Vercel (HTTPS) works; never mixed-content |
 | Face not recognized but registered | Strict margin threshold | Add more face samples (student dashboard) |
