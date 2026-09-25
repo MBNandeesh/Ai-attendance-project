@@ -5,11 +5,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { loginTeacher, registerTeacher, storeSession, ApiError } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 
 type Mode = "login" | "register";
 
 export default function TeacherLoginPage() {
   const router = useRouter();
+  const { setSession } = useAuth();
   const [mode, setMode] = useState<Mode>("login");
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
@@ -27,6 +29,9 @@ export default function TeacherLoginPage() {
       }
       const auth = await loginTeacher(username, password);
       storeSession(auth);
+      // Update in-memory auth state before navigating — otherwise the
+      // dashboard guard sees `me === null` and bounces back to /login.
+      setSession({ user_id: auth.user_id, role: auth.role, name: auth.name });
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong");
